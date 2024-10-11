@@ -1,0 +1,93 @@
+﻿@page "/proveedores"
+@using RoticeriaBlazor.Interfaces
+@using RoticeriaBlazor.Modelos;
+
+@inject GenericService<Proveedor> proveedorService
+
+<h3>Lista de Proveedores</h3>
+
+@if (proveedores == null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <NavLink class="nav-link" href="nuevoproveedor">
+        Nuevo Producto
+    </NavLink>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Contacto</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var proveedor in proveedores)
+            {
+                <tr>
+                    <td>@proveedor.Nombre</td>
+                    <td>@proveedor.Contacto</td>
+                    <td>@proveedor.Telefono</td>
+                    <td>@proveedor.Email</td>
+                    <td>
+                        <NavLink class="nav-link" href="@($"editarproveedor?idProveedor={proveedor.Id}")">
+                            Editar
+                        </NavLink>
+                        <button title="Eliminar" class="btn btn-danger" @onclick="@(() => ConfirmarEliminar(proveedor))">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (proveedorAEliminar != null)
+{
+    <div class="alert alert-warning">
+        <strong>Advertencia:</strong> ¿Está seguro que desea eliminar el proveedor @proveedorAEliminar.Nombre?
+        <button class="btn btn-danger" @onclick="EliminarProveedor">Sí, Eliminar</button>
+        <button class="btn btn-secondary" @onclick="CancelarEliminar">Cancelar</button>
+    </div>
+}
+
+@code {
+    private List<Proveedor>? proveedores;
+    private Proveedor? proveedorAEliminar;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProveedores();
+    }
+
+    private async Task CargarProveedores()
+    {
+        proveedores = await proveedorService.GetAllAsync();
+    }
+
+    private void ConfirmarEliminar(Proveedor proveedor)
+    {
+        proveedorAEliminar = proveedor;
+    }
+
+    private async Task EliminarProveedor()
+    {
+        if (proveedorAEliminar != null)
+        {
+            // Eliminar el proveedor usando el servicio
+            await proveedorService.DeleteAsync(proveedorAEliminar.Id);
+            proveedorAEliminar = null; // Reiniciar el proveedor a eliminar
+            await CargarProveedores(); // Recargar la lista de proveedores
+        }
+    }
+
+    private void CancelarEliminar()
+    {
+        proveedorAEliminar = null; // Reiniciar la selección
+    }
+}

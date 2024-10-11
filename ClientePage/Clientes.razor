@@ -1,0 +1,107 @@
+﻿@page "/clientes"
+@using CurrieTechnologies.Razor.SweetAlert2
+
+@inject IClienteService ClientesService
+@inject SweetAlertService SweetAlert
+
+<PageTitle>Clientes</PageTitle>
+<h1>Clientes</h1>
+
+@if (clients == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (clients.Count == 0)
+{
+    <p>No hay clientes disponibles.</p>
+}
+else
+{
+    <NavLink class="nav-link" href="nuevocliente">
+        Nuevo Cliente
+    </NavLink>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Email</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var client in clients)
+            {
+                <tr>
+                    <td>@client.Id</td>
+                    <td>@client.Nombre</td>
+                    <td>@client.Telefono</td>
+                    <td>@client.Direccion</td>
+                    <td>@client.Email</td>
+                    <td>
+                        <NavLink class="nav-link" href=@($"/editarcliente/{client.Id}")>
+                            Editar
+                        </NavLink>
+                        <button title="Eliminar" class="btn btn-danger" @onclick="@(() => ConfirmarEliminar(client))">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (clienteAEliminar != null)
+{
+    <div class="alert alert-warning">
+        <strong>Advertencia:</strong> ¿Está seguro que desea eliminar al cliente @clienteAEliminar.Nombre?
+        <button class="btn btn-danger" @onclick="EliminarCliente">Sí, Eliminar</button>
+        <button class="btn btn-secondary" @onclick="CancelarEliminar">Cancelar</button>
+    </div>
+}
+
+@code {
+    private List<Cliente>? clients;
+    private Cliente? clienteAEliminar;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarClientes();
+    }
+
+    private async Task CargarClientes()
+    {
+        clients = await ClientesService.Get();
+    }
+
+    private void ConfirmarEliminar(Cliente client)
+    {
+        clienteAEliminar = client; // Almacenar el cliente a eliminar
+    }
+
+    private async Task EliminarCliente()
+    {
+        if (clienteAEliminar != null)
+        {
+            try
+            {
+                await ClientesService.Delete(clienteAEliminar.Id); // Elimina el cliente
+                await CargarClientes(); // Recarga la lista después de eliminar
+                clienteAEliminar = null; // Limpiar la selección
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al eliminar el cliente: {ex.Message}");
+                // Puedes agregar un mensaje de error aquí para notificar al usuario
+            }
+        }
+    }
+
+    private void CancelarEliminar()
+    {
+        clienteAEliminar = null; // Cancelar la eliminación
+    }
+}

@@ -1,0 +1,60 @@
+﻿@page "/editarproveedor"
+@using RoticeriaBlazor.Interfaces
+@using RoticeriaBlazor.Modelos
+@inject IGenericService<Proveedor> ProveedorService
+@inject NavigationManager NavigationManager
+
+@if (proveedor == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <h3>Editando un proveedor</h3>
+    <EditForm Model="proveedor" OnValidSubmit="GuardarProveedor">
+
+        <DataAnnotationsValidator />
+
+        <label class="form-label mb-2">Nombre</label>
+        <InputText class="form-control" @bind-Value="proveedor.Nombre" />
+
+        <label class="form-label mb-2">Contacto</label>
+        <InputText class="form-control" @bind-Value="proveedor.Contacto" />
+
+        <label class="form-label mb-2">Teléfono</label>
+        <InputText class="form-control" @bind-Value="proveedor.Telefono" />
+
+        <label class="form-label mb-2">Email</label>
+        <InputText class="form-control" @bind-Value="proveedor.Email" />
+
+        <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+    </EditForm>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public int idProveedor { get; set; }
+
+    public Proveedor? proveedor { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener el proveedor por ID utilizando el servicio genérico
+        proveedor = await ProveedorService.GetByIdAsync(idProveedor);
+
+        if (proveedor == null)
+        {
+            // Redirigir o manejar el caso en que no se encuentra el proveedor
+            NavigationManager.NavigateTo("/proveedores");
+        }
+    }
+
+    private async Task GuardarProveedor()
+    {
+        // Actualizar el proveedor utilizando el servicio genérico
+        await ProveedorService.UpdateAsync(proveedor);
+        // Redirigir a la lista de proveedores después de guardar
+        NavigationManager.NavigateTo("/proveedores");
+    }
+}
