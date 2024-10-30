@@ -37,6 +37,7 @@ namespace RoticeriaBlazor.Services
             {
                 Id = pedido.Id,
                 ClienteId = pedido.ClienteId,
+                ProductoId = pedido.ProductoId, // Agregar ProductoId
                 Fecha = pedido.Fecha,
                 Estado = pedido.Estado
             };
@@ -53,6 +54,7 @@ namespace RoticeriaBlazor.Services
             {
                 Id = pedido.Id,
                 ClienteId = pedido.ClienteId,
+                ProductoId = pedido.ProductoId, // Agregar ProductoId
                 Fecha = pedido.Fecha,
                 Estado = pedido.Estado
             };

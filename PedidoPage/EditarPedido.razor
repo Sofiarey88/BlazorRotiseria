@@ -1,10 +1,13 @@
 ﻿@page "/editarpedido"
 @using RoticeriaBlazor.Interfaces
 @using RoticeriaBlazor.Modelos
+@using RoticeriaBlazor.Services
 @inject IGenericService<Pedido> PedidoService
+@inject IProductoService ProductoService
+@inject IClienteService ClienteService 
 @inject NavigationManager NavigationManager
 
-@if (pedido == null)
+@if (pedido == null || productos == null || clientes == null)
 {
     <p><em>Cargando...</em></p>
 }
@@ -15,14 +18,29 @@ else
 
         <DataAnnotationsValidator />
 
-        <label class="form-label mb-2">Cliente ID</label>
-        <InputNumber class="form-control" @bind-Value="pedido.ClienteId" />
+        <label class="form-label mb-2">Cliente</label>
+        <InputSelect class="form-control" @bind-Value="pedido.ClienteId">
+            <option value="">Seleccione un cliente</option>
+            @foreach (var cliente in clientes)
+            {
+                <option value="@cliente.Id">@cliente.Nombre</option>
+            }
+        </InputSelect>
 
         <label class="form-label mb-2">Fecha</label>
         <InputDate class="form-control" @bind-Value="pedido.Fecha" />
 
         <label class="form-label mb-2">Estado</label>
         <InputText class="form-control" @bind-Value="pedido.Estado" />
+
+        <label class="form-label mb-2">Producto</label>
+        <InputSelect class="form-control" @bind-Value="pedido.ProductoId">
+            <option value="">Seleccione un producto</option>
+            @foreach (var producto in productos)
+            {
+                <option value="@producto.Id">@producto.Nombre</option>
+            }
+        </InputSelect>
 
         <button type="submit" class="btn btn-primary mt-3">Guardar</button>
     </EditForm>
@@ -34,10 +52,14 @@ else
     public int idPedido { get; set; }
 
     public Pedido? pedido { get; set; }
+    private List<Producto>? productos; // Lista de productos
+    private List<Cliente>? clientes; // Lista de clientes
 
     protected override async Task OnInitializedAsync()
     {
         pedido = await PedidoService.GetByIdAsync(idPedido);
+        productos = await ProductoService.Get(); // Cargar la lista de productos
+        clientes = await ClienteService.Get(); // Cargar la lista de clientes
     }
 
     private async Task GuardarPedido()

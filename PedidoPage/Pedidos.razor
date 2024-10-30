@@ -2,6 +2,8 @@
 @using RoticeriaBlazor.Modelos
 @using RoticeriaBlazor.Services
 @inject IPedidosService PedidoService
+@inject IClienteService ClientesService
+@inject IProductoService ProductosService
 
 <PageTitle>Pedidos</PageTitle>
 
@@ -28,6 +30,7 @@ else
                 <th>Fecha</th>
                 <th>Estado</th>
                 <th>Cliente</th>
+                <th>Producto</th> <!-- Nueva columna para el producto -->
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -37,7 +40,8 @@ else
                 <tr>
                     <td>@pedido.Fecha.ToString("dd/MM/yyyy")</td>
                     <td>@pedido.Estado</td>
-                    <td>@pedido.ClienteId</td>
+                    <td>@clienteNombres[pedido.ClienteId]</td> <!-- Mostrar el nombre del cliente -->
+                    <td>@productoNombres[pedido.ProductoId]</td> <!-- Mostrar el nombre del producto -->
                     <td>
                         <NavLink class="nav-link" href=@($"editarpedido?idPedido={pedido.Id}")>
                             Editar
@@ -65,11 +69,15 @@ else
 
 @code {
     private List<Pedido>? pedidos;
-    private Pedido? pedidoAEliminar; // Asegúrate de definir esta variable para la eliminación
+    private Pedido? pedidoAEliminar;
+    private Dictionary<int, string> clienteNombres = new(); // Almacena nombres de clientes con su ID
+    private Dictionary<int, string> productoNombres = new(); // Almacena nombres de productos con su ID
 
     protected override async Task OnInitializedAsync()
     {
         await CargarPedidos();
+        await CargarClientes();
+        await CargarProductos(); // Cargar productos también
     }
 
     private async Task CargarPedidos()
@@ -81,13 +89,41 @@ else
         catch (Exception ex)
         {
             Console.WriteLine($"Error fetching pedidos: {ex.Message}");
-            pedidos = new List<Pedido>(); // Asegúrate de que no sea null
+            pedidos = new List<Pedido>();
+        }
+    }
+
+    private async Task CargarClientes()
+    {
+        try
+        {
+            var clientes = await ClientesService.Get();
+            clienteNombres = clientes.ToDictionary(c => c.Id, c => c.Nombre); // Asigna el nombre de cada cliente a su ID
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching clientes: {ex.Message}");
+            clienteNombres = new Dictionary<int, string>();
+        }
+    }
+
+    private async Task CargarProductos()
+    {
+        try
+        {
+            var productos = await ProductosService.Get();
+            productoNombres = productos.ToDictionary(p => p.Id, p => p.Nombre); // Asigna el nombre de cada producto a su ID
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching productos: {ex.Message}");
+            productoNombres = new Dictionary<int, string>();
         }
     }
 
     private void ConfirmarEliminar(Pedido pedido)
     {
-        pedidoAEliminar = pedido; // Almacenar el pedido a eliminar
+        pedidoAEliminar = pedido;
     }
 
     private async Task EliminarPedido()
@@ -96,20 +132,19 @@ else
         {
             try
             {
-                await PedidoService.Delete(pedidoAEliminar.ClienteId); // Elimina el pedido
-                await CargarPedidos(); // Recarga la lista después de eliminar
-                pedidoAEliminar = null; // Limpiar la selección
+                await PedidoService.Delete(pedidoAEliminar.Id);
+                await CargarPedidos();
+                pedidoAEliminar = null;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error al eliminar el pedido: {ex.Message}");
-                // Puedes agregar un mensaje de error aquí para notificar al usuario
             }
         }
     }
 
     private void CancelarEliminar()
     {
-        pedidoAEliminar = null; // Cancelar la eliminación
+        pedidoAEliminar = null;
     }
 }
