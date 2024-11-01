@@ -30,7 +30,8 @@ else
                 <th>Fecha</th>
                 <th>Estado</th>
                 <th>Cliente</th>
-                <th>Producto</th> <!-- Nueva columna para el producto -->
+                <th>Producto</th>
+                <th>Precio</th> <!-- Nueva columna para el precio -->
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -40,8 +41,9 @@ else
                 <tr>
                     <td>@pedido.Fecha.ToString("dd/MM/yyyy")</td>
                     <td>@pedido.Estado</td>
-                    <td>@clienteNombres[pedido.ClienteId]</td> <!-- Mostrar el nombre del cliente -->
-                    <td>@productoNombres[pedido.ProductoId]</td> <!-- Mostrar el nombre del producto -->
+                    <td>@clienteNombres[pedido.ClienteId]</td> <!-- Nombre del cliente -->
+                    <td>@productoNombresPrecios[pedido.ProductoId].Nombre</td> <!-- Nombre del producto -->
+                    <td>@productoNombresPrecios[pedido.ProductoId].Precio.ToString("C")</td> <!-- Precio del producto en formato moneda -->
                     <td>
                         <NavLink class="nav-link" href=@($"editarpedido?idPedido={pedido.Id}")>
                             Editar
@@ -71,7 +73,7 @@ else
     private List<Pedido>? pedidos;
     private Pedido? pedidoAEliminar;
     private Dictionary<int, string> clienteNombres = new(); // Almacena nombres de clientes con su ID
-    private Dictionary<int, string> productoNombres = new(); // Almacena nombres de productos con su ID
+    private Dictionary<int, (string Nombre, decimal Precio)> productoNombresPrecios = new(); // Almacena nombres y precios de productos con su ID
 
     protected override async Task OnInitializedAsync()
     {
@@ -112,12 +114,12 @@ else
         try
         {
             var productos = await ProductosService.Get();
-            productoNombres = productos.ToDictionary(p => p.Id, p => p.Nombre); // Asigna el nombre de cada producto a su ID
+            productoNombresPrecios = productos.ToDictionary(p => p.Id, p => (p.Nombre, p.Precio)); // Guarda nombre y precio por ID
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error fetching productos: {ex.Message}");
-            productoNombres = new Dictionary<int, string>();
+            productoNombresPrecios = new Dictionary<int, (string, decimal)>();
         }
     }
 
