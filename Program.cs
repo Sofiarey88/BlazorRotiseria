@@ -5,6 +5,7 @@ using RoticeriaBlazor;
 using RoticeriaBlazor.Interfaces;
 using RoticeriaBlazor.Modelos;
 using RoticeriaBlazor.Services;
+using RoticeriaBlazor.Services.Login;
 
 internal class Program
 {
@@ -23,6 +24,7 @@ internal class Program
         builder.Services.AddScoped<GenericService<Proveedor>>();
         builder.Services.AddScoped<IPedidosService, PedidosService>();
         builder.Services.AddScoped<IProveedorService, ProveedorService>();
+        builder.Services.AddScoped<FirebaseAuthService>();
 
 
 

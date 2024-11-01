@@ -1,4 +1,7 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using RoticeriaBlazor.Services.Login
+@inject FirebaseAuthService AuthService
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">RoticeriaBlazor</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -14,32 +17,44 @@
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-       
-
         <div class="nav-item px-3">
-            <NavLink class="nav-link d-flex align-items-center" href="clientes">
-                <span class="bi bi-person-fill" aria-hidden="true" style="margin-right: 6px;"></span> Clientes
+            <NavLink class="nav-link d-flex align-items-center" href="login">
+                <span class="bi bi-person-fill" aria-hidden="true" style="margin-right: 6px;"></span> Iniciar Sesión
             </NavLink>
         </div>
+        @if (IsAuthenticated)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link d-flex align-items-center" href="clientes">
+                    <span class="bi bi-person-fill" aria-hidden="true" style="margin-right: 6px;"></span> Clientes
+                </NavLink>
+            </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link d-flex align-items-center" href="proveedores">
-                <span class="bi bi-people-fill" aria-hidden="true" style="margin-right: 6px;"></span> Proveedores
-            </NavLink>
-        </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link d-flex align-items-center" href="proveedores">
+                    <span class="bi bi-people-fill" aria-hidden="true" style="margin-right: 6px;"></span> Proveedores
+                </NavLink>
+            </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="productos">
-                <span class="bi bi-basket" aria-hidden="true" style="margin-right: 6px;"></span> Productos
-            </NavLink>
-        </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="productos">
+                    <span class="bi bi-basket" aria-hidden="true" style="margin-right: 6px;"></span> Productos
+                </NavLink>
+            </div>
 
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link d-flex align-items-center" href="pedidos">
-                <span class="bi bi-file-earmark-text-fill" aria-hidden="true" style="margin-right: 6px;"></span> Pedidos
-            </NavLink>
-        </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link d-flex align-items-center" href="pedidos">
+                    <span class="bi bi-file-earmark-text-fill" aria-hidden="true" style="margin-right: 6px;"></span> Pedidos
+                </NavLink>
+            </div>
+
+            <button class="btn btn-primary" @onclick="CerrarSesion">Cerrar sesión</button>
+
+        }
+
+
+     
 
 
         
@@ -48,12 +63,45 @@
 </div>
 
 @code {
+
+    Usuario usuario { get; set; } = new Usuario();
+
     private bool collapseNavMenu = true;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private bool IsAuthenticated;
+
+    private string textoMenuLogin => IsAuthenticated ? "Cerrar sesión" : "Iniciar sesión";
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
     }
+
+    protected async override Task OnInitializedAsync()
+    {
+        IsAuthenticated = await AuthService.IsUserAuthenticated();
+        AuthService.OnChangeLogin += ChequeoEstadoLogin;
+    }
+
+    public void Dispose()
+    {
+        AuthService.OnChangeLogin -= ChequeoEstadoLogin;
+    }
+    public async void ChequeoEstadoLogin()
+    {
+        IsAuthenticated = await AuthService.IsUserAuthenticated();
+        StateHasChanged();
+
+    }
+    private async Task CerrarSesion()
+    {
+        await AuthService.SignOut();
+        usuario = new Usuario();
+        IsAuthenticated = await AuthService.IsUserAuthenticated();
+        StateHasChanged();
+    }
+
+
 }

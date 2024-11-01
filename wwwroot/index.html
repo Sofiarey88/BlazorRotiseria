@@ -29,6 +29,50 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+    <!-- Configuración de Firebase -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAG2a64Un5gcNaSrHdS3NmQKsEgmOQ1tj4",
+            authDomain: "fir-autenticacion-262a8.firebaseapp.com",
+            projectId: "fir-autenticacion-262a8",
+            storageBucket: "fir-autenticacion-262a8.firebasestorage.app",
+            messagingSenderId: "273783148183",
+            appId: "1:273783148183:web:690c002a51ae11dfd923d2",
+            measurementId: "G-VQN7XERCQR"
+        };
+        firebase.initializeApp(firebaseConfig);
+        console.log(firebase);
+        window.firebaseAuth = {
+            signInWithEmailPassword: async function (email, password) {
+                try {
+                    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                    return userCredential.user.uid;
+                } catch (error) {
+                    console.error("Error en autenticación:", error.message);
+                    return null;
+                }
+            },
+
+            signOut: async function () {
+                await firebase.auth().signOut();
+            }
+        };
+        window.localStorageHelper = {
+            setItem: function (key, value) {
+                sessionStorage.setItem(key, value);
+            },
+            getItem: function (key) {
+                return sessionStorage.getItem(key);
+            },
+            removeItem: function (key) {
+                sessionStorage.removeItem(key);
+            }
+        };
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/CurrieTechnologies.Razor.SweetAlert2/sweetalert2.all.min.js"></script>
 
