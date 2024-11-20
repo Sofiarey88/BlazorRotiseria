@@ -1,8 +1,7 @@
 ﻿@page "/login"
 @using RoticeriaBlazor.Services.Login
 @inject FirebaseAuthService AuthService
-
-
+@inject NavigationManager NavigationManager
 
 @if (!IsAuthenticated)
 {
@@ -23,8 +22,6 @@
     </EditForm>
 }
 
-
-
 @code {
     Usuario usuario { get; set; } = new Usuario();
 
@@ -33,16 +30,20 @@
     protected async override Task OnInitializedAsync()
     {
         IsAuthenticated = await AuthService.IsUserAuthenticated();
-
     }
 
     private async Task IniciarSesion()
     {
         await AuthService.SignInWithEmailPassword(usuario.Email, usuario.Password);
         IsAuthenticated = await AuthService.IsUserAuthenticated();
-        StateHasChanged();
+
+        if (IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/"); // Redirige a Home.razor
+        }
+        else
+        {
+            // Opcional: Mostrar un mensaje de error si la autenticación falla.
+        }
     }
-
-   
-
 }
